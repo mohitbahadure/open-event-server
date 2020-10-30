@@ -67,8 +67,34 @@ def test_get_event_attendees_owner(db, client, user, jwt):
     assert len(json.loads(response.data)['data']) == 1
 
 
+def test_get_draft_event_attendees_owner(db, client, user, jwt):
+    attendee = get_minimal_attendee(db, user, owner=True, event_status='draft')
+
+    response = client.get(
+        f'/v1/events/{attendee.event_id}/attendees',
+        content_type='application/vnd.api+json',
+        headers=jwt,
+    )
+
+    assert response.status_code == 200
+    assert len(json.loads(response.data)['data']) == 1
+
+
 def test_get_event_attendees_admin(db, client, admin_jwt):
     attendee = get_minimal_attendee(db)
+
+    response = client.get(
+        f'/v1/events/{attendee.event_id}/attendees',
+        content_type='application/vnd.api+json',
+        headers=admin_jwt,
+    )
+
+    assert response.status_code == 200
+    assert len(json.loads(response.data)['data']) == 1
+
+
+def test_get_draft_event_attendees_admin(db, client, admin_jwt):
+    attendee = get_minimal_attendee(db, event_status='draft')
 
     response = client.get(
         f'/v1/events/{attendee.event_id}/attendees',

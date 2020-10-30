@@ -34,14 +34,15 @@ def event_query(
         event = safe_query_kwargs(Event, view_kwargs, event_identifier, 'identifier')
 
     if event:
-        if event.state != 'published':
+        forbidden = 'Authorization' not in request.headers or not has_access(
+            permission, event_id=event.id
+        )
+        if event.state != 'published' and forbidden:
             raise ObjectNotFound(
                 {'parameter': event_id},
                 "Event: {} not found".format(view_kwargs[event_id]),
             )
-        if 'Authorization' not in request.headers or not has_access(
-            permission, event_id=event.id
-        ):
+        if forbidden:
             raise ForbiddenError(
                 {'parameter': event_id},
                 "You don't have access to event {}".format(view_kwargs[event_id]),
